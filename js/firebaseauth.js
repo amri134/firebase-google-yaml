@@ -1,7 +1,6 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { getFirestore, setDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyA8VvXw710toyzNQ-prNycI5OhPh3bm8YI",
@@ -13,7 +12,6 @@ const firebaseConfig = {
     measurementId: "G-58NKS6S5T5"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const provider = new GoogleAuthProvider();
 
@@ -26,6 +24,7 @@ function showMessage(message, divId) {
         messageDiv.style.opacity = 0;
     }, 5000);
 }
+
 const signUp = document.getElementById('submitSignUp');
 signUp.addEventListener('click', (event) => {
     event.preventDefault();
@@ -103,9 +102,34 @@ googleSignIn.addEventListener('click', (event) => {
     signInWithPopup(auth, provider)
         .then((result) => {
             const user = result.user;
-            showMessage('Google Sign-In Successful', 'signInMessage');
-            localStorage.setItem('loggedInUserId', user.uid);
-            window.location.href = 'homepage.html';
+            const db = getFirestore();
+            const docRef = doc(db, "users", user.uid);
+            getDoc(docRef)
+                .then((docSnap) => {
+                    if (!docSnap.exists()) {
+                        const userData = {
+                            email: user.email,
+                            firstName: user.displayName.split(' ')[0],
+                            lastName: user.displayName.split(' ')[1] || ''
+                        };
+                        setDoc(docRef, userData)
+                            .then(() => {
+                                showMessage('Google Sign-In Successful', 'signInMessage');
+                                localStorage.setItem('loggedInUserId', user.uid);
+                                window.location.href = 'homepage.html';
+                            })
+                            .catch((error) => {
+                                console.error("Error writing document", error);
+                            });
+                    } else {
+                        showMessage('Google Sign-In Successful', 'signInMessage');
+                        localStorage.setItem('loggedInUserId', user.uid);
+                        window.location.href = 'homepage.html';
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error getting document", error);
+                });
         })
         .catch((error) => {
             showMessage('Google Sign-In Failed', 'signInMessage');

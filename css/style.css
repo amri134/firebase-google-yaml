@@ -146,3 +146,7 @@ button:hover{
     animation:fadeOut 7s forwards;
 
 }
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}

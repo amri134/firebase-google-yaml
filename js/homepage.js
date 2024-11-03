@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import {getAuth, onAuthStateChanged, signOut} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import{getFirestore, getDoc, doc} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { getFirestore, getDoc, doc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyA8VvXw710toyzNQ-prNycI5OhPh3bm8YI",
@@ -10,17 +10,15 @@ const firebaseConfig = {
     messagingSenderId: "875231949079",
     appId: "1:875231949079:web:505c1630d3bdb4ebf10752",
     measurementId: "G-58NKS6S5T5"
-  };
- 
-  //c370b4ky1685@bangkit.academy Hajijin Amri
-  const app = initializeApp(firebaseConfig);
+};
 
-  const auth=getAuth();
-  const db=getFirestore();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth();
+const db = getFirestore();
 
-  onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, (user) => {
     if (user) {
-        if (!user.emailVerified) {
+        if (!user.emailVerified && !user.providerData.some(provider => provider.providerId === 'google.com')) {
             console.log("Email not verified");
             signOut(auth).then(() => {
                 window.location.href = 'index.html';
@@ -50,18 +48,21 @@ const firebaseConfig = {
         } else {
             console.log("User Id not Found in Local storage");
         }
+    } else {
+        alert("You must log in/register first.");
+        window.location.href = 'index.html';
     }
 });
 
-  const logoutButton=document.getElementById('logout');
+const logoutButton = document.getElementById('logout');
 
-  logoutButton.addEventListener('click',()=>{
+logoutButton.addEventListener('click', () => {
     localStorage.removeItem('loggedInUserId');
     signOut(auth)
-    .then(()=>{
-        window.location.href='index.html';
-    })
-    .catch((error)=>{
-        console.error('Error Signing out:', error);
-    })
-  })
+        .then(() => {
+            window.location.href = 'index.html';
+        })
+        .catch((error) => {
+            console.error('Error Signing out:', error);
+        });
+});
